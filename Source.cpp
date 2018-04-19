@@ -13,18 +13,18 @@ struct sinhvien {// tạo struct sinh viên
 	int	namhoc;
 	wchar_t *ngaysinh;
 	wchar_t *email;
-	wchar_t *hinhanh;
+	wchar_t *hinh;
 	wchar_t *mota;
 	wchar_t *sothich;
-};typedef struct sinhvien SV;
-int DemSV(FILE *In)// đếm số sinh viên
+};typedef struct sinhvien sv;
+int DemSV(FILE *filein)// đếm số sinh viên
 {
-	rewind(In);
+	rewind(filein);
 	int dem = 0;
 	wchar_t s;
-	while (!feof(In))
+	while (!feof(filein))
 	{
-		s = fgetwc(In);
+		s = fgetwc(filein);
 		if (s == L'\n')
 		{
 			dem++;
@@ -87,22 +87,55 @@ int docdulieuint(FILE* filein)
 	}
 	return n;
 }
+sv thongtin1sinhvien(FILE*filein)
+{
+	sv a;
+	a.MSSV = docdulieu(filein);
+	a.hoten = docdulieu(filein);
+	a.khoa = docdulieu(filein);
+	a.namhoc = docdulieuint(filein);
+	a.ngaysinh = docdulieu(filein);
+	a.email = docdulieu(filein);
+	a.hinh = docdulieu(filein);
+	a.mota = docdulieu(filein);
+	a.sothich = docdulieu(filein);
+	return a;
+}
+sv* thongtintoansinhvien(FILE*filein,int soSV)
+{
+	sv*S = (sv*)malloc((soSV)*sizeof(sv));
+	for (int i = 0; i < soSV; i++)
+	{
+		*(S + i) = thongtin1sinhvien(filein);
+	}
+	return S;
+}
 int main()
 {
 	_setmode(_fileno(stdout), _O_U16TEXT); //needed for output
 	_setmode(_fileno(stdin), _O_U16TEXT); //needed for input
-	FILE*filein = _wfopen(L"ttt.csv", L"r, ccs=UTF-8");
-	wchar_t *t= docdulieu(filein);
-	wchar_t *t2= docdulieu(filein);
-	wchar_t *t3 = docdulieu(filein);
-	wchar_t *t4 = docdulieu(filein);
-	int nam=docdulieuint(filein);
-	wprintf(L"%ls,%ls,%ls,%ld",t,t2,t3,nam);
-	/*wint_t nam = docdulieuint(filein);*/
+	FILE*filein = _wfopen(L"thongtin.csv", L"r, ccs=UTF-8");
+	//wchar_t *t= docdulieu(filein);
+	//wchar_t *t2= docdulieu(filein);
+	//wchar_t *t3 = docdulieu(filein);
+	//int nam = docdulieuint(filein);
+	//wchar_t *t4 = docdulieu(filein);
+	//wchar_t *t5 = docdulieu(filein);
+	//wchar_t *t6= docdulieu(filein);
+	//wchar_t *t7 = docdulieu(filein);
+	//wchar_t *t8 = docdulieu(filein);
+	int dem = DemSV(filein);
+	fseek(filein, 3L, 0);
+	sv *s = thongtintoansinhvien(filein,dem);
+	for (int i = 0; i < dem; i++)
+	{
+		wprintf(L"%ls,%ls,%ls,%ld,%ls,%ls,%ls,%ls,%ls", (*(s + i)).MSSV, (*(s + i)).hoten, (*(s + i)).khoa, (*(s + i)).namhoc, (*(s + i)).ngaysinh, (*(s + i)).email, (*(s + i)).hinh, (*(s + i)).mota, (*(s + i)).sothich);
+	}
 	fclose(filein);
-	FILE*fileout = _wfopen(L"tt.txt", L"w,ccs=UTF-8");
-	fwprintf(fileout, L"%ls,%ls,%ls,%ld", t, t2, t3, nam);
-	fclose(fileout);
+	//FILE*fileout = _wfopen(L"tt.txt", L"w,ccs=UTF-8");
+	//fwprintf(fileout, L"%ls,%ls,%ls,%ld", t, t2, t3, nam);
+	//fclose(fileout);
+	w
 	getch();
 	return 0;
 }
