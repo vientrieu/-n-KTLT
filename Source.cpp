@@ -60,11 +60,6 @@ wchar_t *docdulieu(FILE*filein)// đọc kiểu unicode
 		{
 			thongtin = (wchar_t*)realloc(thongtin, (i + 1)*sizeof(wchar_t));
 			data = fgetwc(filein);
-		/*	if (data == L'\n')
-			{
-				*(thongtin + i+1) = '\0';
-				break;
-			}*/
 			if (data == L',')
 			{
 				*(thongtin + i) = '\0';
@@ -116,6 +111,16 @@ sv* thongtintoansinhvien(FILE*filein,int soSV)
 	}
 	return S;
 }
+void freesv(sv &a)
+{
+	free(a.MSSV);
+	free(a.hoten);
+	free(a.khoa);
+	free(a.ngaysinh);
+	free(a.email);
+	free(a.hinh);
+	free(a.);
+}
 int timchuoi(wchar_t* cha, wchar_t* con, int start)
 {
 	int a = wcslen(cha);
@@ -136,8 +141,7 @@ void chenthongtin(wchar_t*chuoi, wchar_t*thay, int n, int vitri)
 {
 	int a = wcslen(chuoi);
 	int b = wcslen(thay);
-	if (n == 0) return;
-	else if (n < 0)
+	if (n < 0)
 	{
 		for (int i = vitri; i < a; i++)
 		{
@@ -169,44 +173,62 @@ void thaydoitt(wchar_t*chuoi, wchar_t*dau, wchar_t*cuoi)
 		chenthongtin(chuoi, cuoi, b - a, vitri);
 	}
 }
-void taohtml(FILE*filein,FILE*fileout,sv a)
+wchar_t *taofilename(sv a)
 {
-	wchar_t *MSSV=L"1212123";
-	wchar_t *hoten = L"Nguyễn Văn A";
-	wchar_t*hotenvdcap = L"NGUYỄN VĂN A";
-	wchar_t *khoa = L"Công nghệ thông tin";
-	wchar_t *khoavdcap = L"CÔNG NGHỆ THÔNG TIN";
+	int n = wcslen(a.MSSV);
+	wchar_t* filename = (wchar_t*)malloc((n + 5)*sizeof(wchar_t));
+	wcscpy(filename, a.MSSV);
+	wchar_t* htm = L".htm";
+	wcscat(filename, htm);
+	return filename;
+}
+void taohtml(FILE*filein,sv a)
+{
+
+	wchar_t* filename = taofilename(a);
+	FILE*fileout = _wfopen(filename, L"w,ccs=UTF-8");
+	wchar_t MSSV[] = L"1212123";
+	wchar_t hoten[] = L"Nguyễn Văn A";
+	wchar_t hotenvdcap[] = L"NGUYỄN VĂN A";
+	wchar_t khoa[] = L"Công nghệ thông tin";
+	wchar_t khoavdcap[] = L"CÔNG NGHỆ THÔNG TIN";
 	int	namhoc=2013;
-	wchar_t *ngaysinh = L"20/01/1994";
-	wchar_t *email = L"nva@gmail.com";
-	wchar_t *hinh = L"HinhCaNhan.jpg";
-	wchar_t *sothich1 = L"Âm nhạc: POP, Balad";
-	wchar_t *sothich2 = L"Ẩm thực: bún riêu, bún thịt nướng";
-	wchar_t *mota = L"Tôi là một người rất thân thiện.";
+	wchar_t ngaysinh[] = L"20/01/1994";
+	wchar_t email[] = L"nva@gmail.com";
+	wchar_t hinh[] = L"HinhCaNhan.jpg";
+	wchar_t sothich[] = L"Âm nhạc: POP, Balad";
+	wchar_t mota []= L"Tôi là một người rất thân thiện.";
 	wchar_t *temp = (wchar_t*)malloc(256 * sizeof(wchar_t));
-	wchar_t* hotencap = (wchar_t*)malloc(wcslen(a.hoten) * sizeof(wchar_t));
+	wchar_t *hotencap = (wchar_t*)malloc(wcslen(a.hoten) * sizeof(wchar_t));
 	wcscpy(hotencap,a.hoten);
 	wcsupr(hotencap);
 	wchar_t* khoacap = (wchar_t*)malloc(wcslen(a.khoa) * sizeof(wchar_t));
 	wcscpy(khoacap, a.khoa);
 	wcsupr(khoacap);
-	wchar_t*no = L"";
 	while (!feof(filein))
 	{
 		fgetws(temp,256, filein);
-	//	thaydoitt(temp, MSSV, a.MSSV);
+		thaydoitt(temp, MSSV, a.MSSV);
 		thaydoitt(temp, hoten, a.hoten);
 		thaydoitt(temp, hotenvdcap,hotencap );
 		thaydoitt(temp, khoa, a.khoa);
-		thaydoitt(temp, khoavdcap, khoacap);
-		//thaydoitt(temp, ngaysinh, a.ngaysinh);
+		thaydoitt(temp, khoavdcap, a.khoa);
 		thaydoitt(temp, email, a.email);
 		thaydoitt(temp, hinh, a.hinh);
-		thaydoitt(temp, sothich1, a.sothich);
-		thaydoitt(temp, sothich2, no);
+		thaydoitt(temp, sothich, a.sothich);
 		thaydoitt(temp, mota, a.mota);
+		thaydoitt(temp, ngaysinh, a.ngaysinh);
 		fwprintf( fileout,L"%ls",temp);
 	}
+	free(temp);
+	free(khoacap);
+	free(hotencap);
+	free(filename);
+	fclose(fileout);
+}
+void hoanthienfile(FILE*filein)
+{
+
 }
 int main()
 {
@@ -214,18 +236,16 @@ int main()
 	_setmode(_fileno(stdin), _O_U16TEXT); //needed for input
 	FILE*filein = _wfopen(L"thongtin.csv", L"r, ccs=UTF-8");
 	int dem = DemSV(filein);
-	fseek(filein, 4L, 0);
+	fseek(filein, 3L, 0);
 	sv *s = thongtintoansinhvien(filein,dem);
 	fclose(filein);
-	for (int i = 0; i < dem; i++)
-	{
-		wprintf(L"%ls,%ls,%ls,%ld,%ls,%ls,%ls,%ls,%ls\n", (*(s + i)).MSSV, (*(s + i)).hoten, (*(s + i)).khoa, (*(s + i)).namhoc, (*(s + i)).ngaysinh, (*(s + i)).email, (*(s + i)).hinh, (*(s + i)).mota, (*(s + i)).sothich);
-	}
-	FILE*filehtml = _wfopen(L"1212123.htm", L"r, ccs=UTF-8");
-	FILE*fileout = _wfopen(L"ttaee.htm", L"w,ccs=UTF-8");
-	taohtml(filehtml, fileout,s[1]);
+	FILE*filehtml = _wfopen(L"filedemo.htm", L"r, ccs=UTF-8");
+	//for (int i = 1; i < dem; i++)
+	//{
+		wchar_t* filename = taofilename(s[0]);
+		taohtml(filehtml, s[0]);
 	fclose(filehtml);
-	fclose(fileout);
+	free(s);
 	getch();
 	return 0;
 }
