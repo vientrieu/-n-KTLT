@@ -16,7 +16,7 @@ struct sinhvien {// tạo struct sinh viên
 	wchar_t *hinh;
 	wchar_t *mota;
 	wchar_t *sothich;
-};typedef struct sinhvien sv;
+}; typedef struct sinhvien sv;
 int DemSV(FILE *filein)// đếm số sinh viên
 {
 	rewind(filein);
@@ -87,6 +87,15 @@ int docdulieuint(FILE* filein)//đọc kiểu int
 	}
 	return n;
 }
+void xoaxuongdong(sv a)//xóa \n
+{
+	int n = wcslen(a.MSSV);
+	if (*(a.MSSV) == '\n')
+	for (int i = 0; i < n; i++)
+	{
+		*(a.MSSV + i) = *(a.MSSV + i + 1);
+	}
+}
 sv thongtin1sinhvien(FILE*filein)
 {
 	sv a;
@@ -101,15 +110,16 @@ sv thongtin1sinhvien(FILE*filein)
 	a.sothich = docdulieu(filein);
 	return a;
 }
-sv* thongtintoansinhvien(FILE*filein,int soSV)
+sv* thongtintoansinhvien(FILE*filein, int soSV)
 {
 
-	sv*S = (sv*)malloc((soSV)*sizeof(sv));
+	sv*s = (sv*)malloc((soSV)*sizeof(sv));
 	for (int i = 0; i < soSV; i++)
 	{
-		*(S + i) = thongtin1sinhvien(filein);
+		*(s + i) = thongtin1sinhvien(filein);
+		xoaxuongdong(*(s + i));
 	}
-	return S;
+	return s;
 }
 void freesv(sv &a)
 {
@@ -119,7 +129,8 @@ void freesv(sv &a)
 	free(a.ngaysinh);
 	free(a.email);
 	free(a.hinh);
-	free(a.);
+	free(a.sothich);
+	free(a.mota);
 }
 int timchuoi(wchar_t* cha, wchar_t* con, int start)
 {
@@ -166,7 +177,7 @@ void thaydoitt(wchar_t*chuoi, wchar_t*dau, wchar_t*cuoi)
 	int i = 0;
 	int a = wcslen(dau);
 	int b = wcslen(cuoi);
-	while (*(chuoi ))
+	while (*(chuoi))
 	{
 		int vitri = timchuoi(chuoi, dau, 0);
 		if (vitri == -1) return;
@@ -182,7 +193,7 @@ wchar_t *taofilename(sv a)
 	wcscat(filename, htm);
 	return filename;
 }
-void taohtml(FILE*filein,sv a)
+void taohtml(FILE*filein, sv a)
 {
 
 	wchar_t* filename = taofilename(a);
@@ -192,43 +203,46 @@ void taohtml(FILE*filein,sv a)
 	wchar_t hotenvdcap[] = L"NGUYỄN VĂN A";
 	wchar_t khoa[] = L"Công nghệ thông tin";
 	wchar_t khoavdcap[] = L"CÔNG NGHỆ THÔNG TIN";
-	int	namhoc=2013;
+	int	namhoc = 2013;
 	wchar_t ngaysinh[] = L"20/01/1994";
 	wchar_t email[] = L"nva@gmail.com";
 	wchar_t hinh[] = L"HinhCaNhan.jpg";
 	wchar_t sothich[] = L"Âm nhạc: POP, Balad";
-	wchar_t mota []= L"Tôi là một người rất thân thiện.";
+	wchar_t mota[] = L"Tôi là một người rất thân thiện.";
+	wchar_t nam[] = L"@2013";
+	wchar_t namthaythe[] = L"@2018";
+	wchar_t MSSVmau[] = L"MSSV -";
+	wchar_t MSSVtacgia[] = L"1712837 -";
+	wchar_t tenmau[] = L"Tên sinh viên thực hiện";
+	wchar_t tentacgia[] = L"Mang Viên Triệu";
 	wchar_t *temp = (wchar_t*)malloc(256 * sizeof(wchar_t));
 	wchar_t *hotencap = (wchar_t*)malloc(wcslen(a.hoten) * sizeof(wchar_t));
-	wcscpy(hotencap,a.hoten);
+	wcscpy(hotencap, a.hoten);
 	wcsupr(hotencap);
 	wchar_t* khoacap = (wchar_t*)malloc(wcslen(a.khoa) * sizeof(wchar_t));
 	wcscpy(khoacap, a.khoa);
 	wcsupr(khoacap);
 	while (!feof(filein))
 	{
-		fgetws(temp,256, filein);
+		fgetws(temp, 256, filein);
 		thaydoitt(temp, MSSV, a.MSSV);
 		thaydoitt(temp, hoten, a.hoten);
 		thaydoitt(temp, hotenvdcap,hotencap );
 		thaydoitt(temp, khoa, a.khoa);
 		thaydoitt(temp, khoavdcap, a.khoa);
+		thaydoitt(temp, ngaysinh, a.ngaysinh);
 		thaydoitt(temp, email, a.email);
 		thaydoitt(temp, hinh, a.hinh);
 		thaydoitt(temp, sothich, a.sothich);
 		thaydoitt(temp, mota, a.mota);
-		thaydoitt(temp, ngaysinh, a.ngaysinh);
-		fwprintf( fileout,L"%ls",temp);
+		thaydoitt(temp, nam, namthaythe);
+		thaydoitt(temp, MSSVmau, MSSVtacgia);
+		thaydoitt(temp, tenmau, tentacgia);
+		fwprintf(fileout, L"%ls", temp);
 	}
 	free(temp);
-	free(khoacap);
-	free(hotencap);
 	free(filename);
 	fclose(fileout);
-}
-void hoanthienfile(FILE*filein)
-{
-
 }
 int main()
 {
@@ -237,15 +251,17 @@ int main()
 	FILE*filein = _wfopen(L"thongtin.csv", L"r, ccs=UTF-8");
 	int dem = DemSV(filein);
 	fseek(filein, 3L, 0);
-	sv *s = thongtintoansinhvien(filein,dem);
+	sv *s = thongtintoansinhvien(filein, dem);
 	fclose(filein);
 	FILE*filehtml = _wfopen(L"filedemo.htm", L"r, ccs=UTF-8");
-	//for (int i = 1; i < dem; i++)
-	//{
-		wchar_t* filename = taofilename(s[0]);
-		taohtml(filehtml, s[0]);
+	for (int i = 0; i < dem; i++)
+	{
+		rewind(filehtml);
+		taohtml(filehtml, s[i]);
+		freesv(s[i]);// giải phóng vùng nhớ 1sv
+	}
 	fclose(filehtml);
-	free(s);
+	free(s);//giải phóng mảng sv
 	getch();
 	return 0;
 }
