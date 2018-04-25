@@ -17,6 +17,7 @@ int main()
 	}
 	fclose(filehtml);//đóng file mẫu
 	free(s);//giải phóng mảng sv
+	wprintf(L"Bạn vừa tạo ra các Profile page nằm trong thư mục gốc của project.");
 	getch();
 	return 0;
 }
