@@ -87,13 +87,21 @@ int docdulieuint(FILE* filein)//đọc kiểu int
 	}
 	return n;
 }
-void xoaxuongdong(sv a)//xóa \n
+void xoarac(wchar_t* chuoi)//xóa rác \n hoặc \t hoặc \" mà hàm đọc sai xót
 {
-	int n = wcslen(a.MSSV);
-	if (*(a.MSSV) == '\n')
-	for (int i = 0; i < n; i++)
+	int n = wcslen(chuoi);
+	int i = 0;
+	while (i<n)
 	{
-		*(a.MSSV + i) = *(a.MSSV + i + 1);
+		if (*(chuoi + i) == '\n' || *(chuoi + i) == '\t' || *(chuoi + i) == '\"')
+		{
+			for (int j = 0; j < n - i; j++)
+			{
+				*(chuoi + i + j) = *(chuoi + i + j + 1);
+			}
+			i = 0;
+		}
+		else i++;
 	}
 }
 sv thongtin1sinhvien(FILE*filein)
@@ -108,6 +116,14 @@ sv thongtin1sinhvien(FILE*filein)
 	a.hinh = docdulieu(filein);
 	a.mota = docdulieu(filein);
 	a.sothich = docdulieu(filein);
+	xoarac(a.MSSV);
+	xoarac(a.hoten);
+	xoarac(a.khoa);
+	xoarac(a.ngaysinh);
+	xoarac(a.email);
+	xoarac(a.hinh);
+	xoarac(a.mota);
+	xoarac(a.sothich);
 	return a;
 }
 sv* thongtintoansinhvien(FILE*filein, int soSV)
@@ -117,7 +133,6 @@ sv* thongtintoansinhvien(FILE*filein, int soSV)
 	for (int i = 0; i < soSV; i++)
 	{
 		*(s + i) = thongtin1sinhvien(filein);
-		xoaxuongdong(*(s + i));
 	}
 	return s;
 }
@@ -256,6 +271,7 @@ int main()
 	FILE*filehtml = _wfopen(L"filedemo.htm", L"r, ccs=UTF-8");
 	for (int i = 0; i < dem; i++)
 	{
+		wprintf(L"%ls,%ls,%ls,%ld,%ls,%ls,%ls,%ls,%ls\n", (*(s + i)).MSSV, (*(s + i)).hoten, (*(s + i)).khoa, (*(s + i)).namhoc, (*(s + i)).ngaysinh, (*(s + i)).email, (*(s + i)).hinh, (*(s + i)).mota, (*(s + i)).sothich);
 		rewind(filehtml);
 		taohtml(filehtml, s[i]);
 		freesv(s[i]);// giải phóng vùng nhớ 1sv
