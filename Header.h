@@ -6,6 +6,7 @@
 #include <malloc.h>
 #include <wchar.h>
 #include <fcntl.h>
+#define _CRT_SECURE_NO_WARNINGS
 struct sinhvien {// tạo struct sinh viên
 	wchar_t *MSSV;
 	wchar_t *hoten;
